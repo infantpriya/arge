@@ -45,5 +45,25 @@ slots: [
 ```
 The gallery will display the photo automatically — no other changes needed.
 
+## Uploading product photos without touching code
+There's now a private admin page at `/admin.html` (e.g. `https://angelrochexports.com/admin.html`) where you or your team can upload product photos directly — no code editing, no re-deploying. Photos appear on the live site automatically within about 30 seconds.
+
+**One-time setup (about 5 minutes):**
+1. In your Vercel project, go to the **Storage** tab → **Create Database** → choose **Blob** → connect it to this project. Vercel automatically adds a `BLOB_READ_WRITE_TOKEN` environment variable for you — you don't need to create this one yourself.
+2. In **Settings → Environment Variables**, add one variable you choose yourself:
+   - `ADMIN_PASSWORD` = a password only you know (this is what unlocks `/admin.html`)
+3. Redeploy the project once so it picks up the new environment variables and the `@vercel/blob` dependency in `package.json`.
+
+**To use it:**
+1. Go to `yourdomain.com/admin.html`.
+2. Enter your `ADMIN_PASSWORD`.
+3. Click any photo box for a product (each has three: e.g. texture close-up, full product, styled shot) and choose a photo from your computer.
+4. That's it — refresh the real site and the photo replaces the dashed placeholder box automatically.
+
+**Notes:**
+- `/admin.html` isn't linked anywhere on the public site and isn't indexed by search engines, but it isn't hidden by a "real" login system either — treat the URL and password like a shared secret, and don't post the `/admin.html` link publicly.
+- If you ever add a brand-new product to `index.html` (not just a photo for an existing one), add a matching line in the `PRODUCTS` list near the top of `admin.html`'s script so it gets upload slots too.
+- Recommended photo size: under 5MB, JPG or PNG, roughly square or 4:3.
+
 ## Design
 Ivory/cream header and footer as requested, deep forest green + gold accents pulled from your logo, Fraunces (serif) for headings and Jost (sans) for body text, with a recurring wave-and-dot divider motif echoing the flourish in your logo mark.
