@@ -829,9 +829,36 @@ function renderProductGrid(containerId, list){
     galEl.querySelector('.next').addEventListener('click', ()=>{ show(current+1); trackEvent('product_gallery_nav',{product:p.name, direction:'next'}); });
   });
 }
-renderProductGrid('grid-textiles', productsTextiles);
-renderProductGrid('grid-decor', productsDecor);
-renderProductGrid('grid-lifestyle', productsLifestyle);
+/* Pull in any photos uploaded via /admin.html and merge them into the
+   placeholder slots before rendering. If the manifest can't be reached
+   (e.g. no photos uploaded yet, or running outside Vercel), the site
+   just falls back to the placeholder boxes -- nothing breaks. */
+async function applyUploadedPhotos(){
+  try{
+    const res = await fetch('/api/get-manifest');
+    if(!res.ok) return;
+    const manifest = await res.json();
+    [productsTextiles, productsDecor, productsLifestyle].forEach(list=>{
+      list.forEach(p=>{
+        const entry = manifest[p.name];
+        if(!entry) return;
+        p.slots.forEach((slot, i)=>{
+          if(entry[i]) slot.img = entry[i];
+        });
+      });
+    });
+  }catch(err){
+    console.warn('Photo manifest unavailable, using placeholders.', err);
+  }
+}
+
+(async function initProducts(){
+  await applyUploadedPhotos();
+  renderProductGrid('grid-textiles', productsTextiles);
+  renderProductGrid('grid-decor', productsDecor);
+  renderProductGrid('grid-lifestyle', productsLifestyle);
+  attachDwellTracking();
+})();
 
 document.getElementById('year').textContent = new Date().getFullYear();
 
@@ -905,7 +932,6 @@ function attachDwellTracking(){
     if(nameEl){ card.dataset.productName = nameEl.textContent; dwellObserver.observe(card); }
   });
 }
-attachDwellTracking();
 
 /* Form funnel tracking: start (first focus) -> submit, to reveal drop-off in GA funnels */
 function wireFormFunnel(formId, formName){
