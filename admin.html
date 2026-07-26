@@ -39,6 +39,11 @@
   }
   .slot:hover .overlay{opacity:1;}
   .slot input[type=file]{display:none;}
+  .remove-btn{
+    position:absolute; bottom:6px; right:6px; z-index:6; font-size:.68rem; padding:4px 10px;
+    background:rgba(139,44,25,0.9); color:#fff; border:none; border-radius:10px; cursor:pointer;
+  }
+  .remove-btn:hover{background:#8a3b22;}
   .status-chip{
     position:absolute; top:6px; right:6px; font-size:.65rem; padding:3px 8px; border-radius:10px;
     background:var(--forest); color:var(--ivory);
@@ -151,10 +156,18 @@ function renderProducts(){
           ${existingUrl ? `<img src="${existingUrl}" alt="${product.name} ${shotType}">` : `<span class="label">${shotType}<br>Click to upload</span>`}
           <span class="overlay">${existingUrl ? 'Click to replace' : 'Click to upload'}</span>
           ${existingUrl ? '<span class="status-chip">Live</span>' : ''}
+          ${existingUrl ? '<button type="button" class="remove-btn">Remove</button>' : ''}
           <input type="file" accept="image/*">
         `;
         const input = slot.querySelector('input');
         input.addEventListener('change', (e)=> handleUpload(e, product.name, i, slot, shotType));
+        const removeBtn = slot.querySelector('.remove-btn');
+        if(removeBtn){
+          removeBtn.addEventListener('click', (e)=>{
+            e.preventDefault(); e.stopPropagation();
+            handleRemove(product.name, i, slot, shotType);
+          });
+        }
         slotsWrap.appendChild(slot);
       });
 
@@ -198,13 +211,47 @@ async function handleUpload(e, productName, slotIndex, slotEl, shotType){
       <img src="${data.url}" alt="${productName} ${shotType}">
       <span class="overlay">Click to replace</span>
       <span class="status-chip">Live</span>
+      <button type="button" class="remove-btn">Remove</button>
       <input type="file" accept="image/*">
     `;
     slotEl.querySelector('input').addEventListener('change', (e)=> handleUpload(e, productName, slotIndex, slotEl, shotType));
+    slotEl.querySelector('.remove-btn').addEventListener('click', (e)=>{
+      e.preventDefault(); e.stopPropagation();
+      handleRemove(productName, slotIndex, slotEl, shotType);
+    });
     showToast('Photo uploaded — live on the site shortly.');
   }catch(err){
     console.error(err);
     showToast('Upload failed. Check your connection and try again.', true);
+  }
+}
+
+async function handleRemove(productName, slotIndex, slotEl, shotType){
+  if(!confirm(`Remove the "${shotType}" photo for ${productName}? This can't be undone.`)) return;
+  showToast('Removing...');
+  try{
+    const res = await fetch('/api/delete-photo', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ password: ADMIN_PASSWORD, product: productName, slotIndex }),
+    });
+    const data = await res.json();
+    if(!res.ok){
+      showToast(data.error || 'Remove failed', true);
+      return;
+    }
+    manifest = data.manifest;
+    slotEl.classList.remove('has-image');
+    slotEl.innerHTML = `
+      <span class="label">${shotType}<br>Click to upload</span>
+      <span class="overlay">Click to upload</span>
+      <input type="file" accept="image/*">
+    `;
+    slotEl.querySelector('input').addEventListener('change', (e)=> handleUpload(e, productName, slotIndex, slotEl, shotType));
+    showToast('Photo removed.');
+  }catch(err){
+    console.error(err);
+    showToast('Remove failed. Check your connection and try again.', true);
   }
 }
 
