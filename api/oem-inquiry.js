@@ -12,8 +12,8 @@
 // 4. Update FROM_EMAIL and TO_EMAIL below to your verified domain / inbox.
 
 const RESEND_API_URL = "https://api.resend.com/emails";
-const FROM_EMAIL = "Angel Roch Global Exports <inquiries@angelrochglobal.com>"; // must be on a domain verified in Resend
-const TO_EMAIL = "info@angelrochglobal.com"; // where inquiries land in your inbox
+const FROM_EMAIL = "Angel Roch Global Exports <info@angelrochexports.com>"; // must be on a domain verified in Resend
+const TO_EMAIL = "info@angelrochexports.com"; // where inquiries land in your inbox
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
