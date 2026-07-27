@@ -56,16 +56,31 @@
   .toast.err{background:#8a3b22;}
   .help{font-size:.82rem; color:var(--muted); margin-bottom:30px; max-width:60ch;}
   .desc-wrap{border-top:1px solid var(--line); padding-top:14px;}
-  .desc-input{
-    width:100%; min-height:80px; padding:10px 12px; border:1px solid var(--line); border-radius:3px;
-    font-family:'Jost',sans-serif; font-size:.88rem; resize:vertical; background:var(--paper); color:var(--ink);
+  .desc-toolbar{display:flex; gap:6px; align-items:center; margin-bottom:8px; flex-wrap:wrap;}
+  .desc-toolbar button{
+    padding:6px 12px; border:1px solid var(--line); background:#fff; border-radius:3px;
+    font-size:.82rem; cursor:pointer; color:var(--ink);
   }
+  .desc-toolbar button:hover{border-color:var(--gold); background:var(--ivory);}
+  .desc-toolbar button.active{background:var(--forest); color:var(--ivory); border-color:var(--forest);}
+  .desc-toolbar select{
+    padding:6px 10px; border:1px solid var(--line); border-radius:3px; font-size:.82rem;
+    background:#fff; color:var(--ink);
+  }
+  .desc-input{
+    width:100%; min-height:100px; padding:10px 12px; border:1px solid var(--line); border-radius:3px;
+    font-family:'Jost',sans-serif; font-size:.9rem; background:var(--paper); color:var(--ink);
+    line-height:1.6; overflow-y:auto;
+  }
+  .desc-input:focus{outline:2px solid var(--gold); outline-offset:1px;}
+  .desc-input:empty::before{content:attr(data-placeholder); color:var(--muted); pointer-events:none;}
   .save-desc-btn{
     padding:9px 18px; background:var(--forest); color:var(--ivory); border:none; border-radius:3px;
     font-size:.82rem; cursor:pointer;
   }
   .save-desc-btn:hover{background:var(--gold); color:var(--ink);}
   .desc-status{font-size:.78rem;}
+  .desc-hint{font-size:.72rem; color:var(--muted); margin:6px 0 8px;}
 </style>
 </head>
 <body>
@@ -189,16 +204,40 @@ function renderProducts(){
       const existingDesc = (manifest[product.name] && manifest[product.name].description) || '';
       descWrap.innerHTML = `
         <label style="display:block; margin-top:16px; font-size:.8rem; color:var(--muted); margin-bottom:6px;">Product description (shown on the website)</label>
-        <textarea class="desc-input" placeholder="Leave blank to keep the default description written in the code.">${existingDesc}</textarea>
+        <div class="desc-toolbar">
+          <button type="button" class="fmt-btn" data-cmd="bold"><b>B</b></button>
+          <button type="button" class="fmt-btn" data-cmd="italic"><i>I</i></button>
+          <select class="font-size-select">
+            <option value="3">Normal size</option>
+            <option value="2">Small</option>
+            <option value="5">Large</option>
+            <option value="7">Extra large</option>
+          </select>
+        </div>
+        <div class="desc-input" contenteditable="true" data-placeholder="Leave blank to keep the default description written in the code.">${existingDesc}</div>
+        <div class="desc-hint">Select some text first, then click Bold/Italic or choose a size to apply it to just that selection.</div>
         <div style="display:flex; align-items:center; gap:12px; margin-top:8px;">
           <button type="button" class="save-desc-btn">Save Description</button>
           <span class="desc-status"></span>
         </div>
       `;
-      const textarea = descWrap.querySelector('.desc-input');
+      const editor = descWrap.querySelector('.desc-input');
       const saveBtn = descWrap.querySelector('.save-desc-btn');
       const statusEl = descWrap.querySelector('.desc-status');
-      saveBtn.addEventListener('click', ()=> handleSaveDescription(product.name, textarea.value, statusEl));
+
+      descWrap.querySelectorAll('.fmt-btn').forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          editor.focus();
+          document.execCommand(btn.dataset.cmd, false, null);
+        });
+      });
+      descWrap.querySelector('.font-size-select').addEventListener('change', (e)=>{
+        editor.focus();
+        document.execCommand('fontSize', false, e.target.value);
+        e.target.value = '3';
+      });
+
+      saveBtn.addEventListener('click', ()=> handleSaveDescription(product.name, editor.innerHTML, statusEl));
       block.appendChild(descWrap);
 
       container.appendChild(block);

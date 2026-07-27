@@ -478,7 +478,7 @@
       </div>
       <div class="info-banner">
         <span>📷</span>
-        <span><b>Product photo slots ready.</b> Each product card has 3 image slots — Overview, Detail, and Color/Packaging. Placeholder slots marked "photo coming soon" are ready for your real product photos, uploaded through the private photo manager — no code changes needed.</span>
+        <span>More product photography is being added regularly. In the meantime, each product below includes full specifications and details — reach out anytime for additional images.</span>
       </div>
       <div class="grid-3" id="productGrid"></div>
     </div>
@@ -502,7 +502,6 @@
           <p id="pd-desc"></p>
           <ul class="feature-check" id="pd-features"></ul>
           <a href="#contact" class="btn btn-forest" data-nav="contact" id="pd-quote-btn">Request a Quote →</a>
-          <div class="upload-hint" style="margin-top:20px;">📷 Photos and description for this product are managed through the private photo manager — no code changes needed.</div>
         </div>
       </div>
 
@@ -851,7 +850,6 @@ function renderProducts(){
             <a href="#product/${p.slug}" class="quote-link" data-nav="products" onclick="trackEvent('product_open',{product:'${p.name}'})">View Details →</a>
             <a href="#contact" class="quote-link" data-nav="contact" onclick="trackEvent('cta_click',{cta:'product_quote', product:'${p.name}'})">Request a Quote →</a>
           </div>
-          <div class="upload-hint">📷 Add real photos anytime via the photo manager — no code changes.</div>
         </div>
       </div>`);
     grid.appendChild(card);
@@ -935,7 +933,7 @@ function renderProductDetail(p){
     `<a href="#home" data-nav="home">Home</a> / <a href="#products" data-nav="products">Products</a> / <a href="#products" data-nav="products">${catLabels[p.cat]}</a> / ${p.name}`;
   document.getElementById('pd-cat-chip').textContent = catLabels[p.cat] + (p.oem ? ' · OEM Available' : '');
   document.getElementById('pd-title').textContent = p.name;
-  document.getElementById('pd-desc').textContent = p.desc;
+  document.getElementById('pd-desc').innerHTML = p.desc;
   document.getElementById('pd-features').innerHTML = p.features.map(f=>`<li><span class="tick">✓</span>${f}</li>`).join('');
   document.getElementById('pd-quote-btn').setAttribute('onclick', `trackEvent('cta_click',{cta:'product_detail_quote', product:'${p.name}'})`);
 
