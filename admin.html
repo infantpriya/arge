@@ -55,6 +55,17 @@
   .toast.show{opacity:1;}
   .toast.err{background:#8a3b22;}
   .help{font-size:.82rem; color:var(--muted); margin-bottom:30px; max-width:60ch;}
+  .desc-wrap{border-top:1px solid var(--line); padding-top:14px;}
+  .desc-input{
+    width:100%; min-height:80px; padding:10px 12px; border:1px solid var(--line); border-radius:3px;
+    font-family:'Jost',sans-serif; font-size:.88rem; resize:vertical; background:var(--paper); color:var(--ink);
+  }
+  .save-desc-btn{
+    padding:9px 18px; background:var(--forest); color:var(--ivory); border:none; border-radius:3px;
+    font-size:.82rem; cursor:pointer;
+  }
+  .save-desc-btn:hover{background:var(--gold); color:var(--ink);}
+  .desc-status{font-size:.78rem;}
 </style>
 </head>
 <body>
@@ -172,9 +183,52 @@ function renderProducts(){
       });
 
       block.appendChild(slotsWrap);
+
+      const descWrap = document.createElement('div');
+      descWrap.className = 'desc-wrap';
+      const existingDesc = (manifest[product.name] && manifest[product.name].description) || '';
+      descWrap.innerHTML = `
+        <label style="display:block; margin-top:16px; font-size:.8rem; color:var(--muted); margin-bottom:6px;">Product description (shown on the website)</label>
+        <textarea class="desc-input" placeholder="Leave blank to keep the default description written in the code.">${existingDesc}</textarea>
+        <div style="display:flex; align-items:center; gap:12px; margin-top:8px;">
+          <button type="button" class="save-desc-btn">Save Description</button>
+          <span class="desc-status"></span>
+        </div>
+      `;
+      const textarea = descWrap.querySelector('.desc-input');
+      const saveBtn = descWrap.querySelector('.save-desc-btn');
+      const statusEl = descWrap.querySelector('.desc-status');
+      saveBtn.addEventListener('click', ()=> handleSaveDescription(product.name, textarea.value, statusEl));
+      block.appendChild(descWrap);
+
       container.appendChild(block);
     });
   });
+}
+
+async function handleSaveDescription(productName, description, statusEl){
+  statusEl.textContent = 'Saving...';
+  statusEl.style.color = 'var(--muted)';
+  try{
+    const res = await fetch('/api/save-description', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ password: ADMIN_PASSWORD, product: productName, description }),
+    });
+    const data = await res.json();
+    if(!res.ok){
+      statusEl.textContent = data.error || 'Save failed';
+      statusEl.style.color = '#a0402a';
+      return;
+    }
+    manifest = data.manifest;
+    statusEl.textContent = 'Saved — live on the site shortly.';
+    statusEl.style.color = 'var(--forest)';
+    showToast('Description saved.');
+  }catch(err){
+    statusEl.textContent = 'Save failed. Check your connection.';
+    statusEl.style.color = '#a0402a';
+  }
 }
 
 async function handleUpload(e, productName, slotIndex, slotEl, shotType){
