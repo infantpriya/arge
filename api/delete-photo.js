@@ -36,6 +36,7 @@ export default async function handler(req, res) {
       access: "public",
       addRandomSuffix: false,
       allowOverwrite: true,
+      cacheControlMaxAge: 0,
       contentType: "application/json",
     });
 
@@ -51,7 +52,7 @@ async function loadManifest() {
     const { blobs } = await list({ prefix: "manifest.json" });
     const found = blobs.find((b) => b.pathname === "manifest.json");
     if (!found) return {};
-    const r = await fetch(found.url);
+    const r = await fetch(found.url + "?t=" + Date.now(), { cache: "no-store" });
     if (!r.ok) return {};
     return await r.json();
   } catch {

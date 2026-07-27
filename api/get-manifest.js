@@ -12,7 +12,7 @@ export default async function handler(req, res) {
     if (!found) {
       return res.status(200).json({}); // no photos uploaded yet
     }
-    const r = await fetch(found.url);
+    const r = await fetch(found.url + "?t=" + Date.now(), { cache: "no-store" });
     const manifest = await r.json();
     res.setHeader("Cache-Control", "s-maxage=30, stale-while-revalidate=120");
     return res.status(200).json(manifest);
