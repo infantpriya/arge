@@ -9,18 +9,24 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const { password, product, imageUrl } = req.body || {};
+  const { password, product, customSlug, imageUrl } = req.body || {};
 
   if (!password || password !== process.env.ADMIN_PASSWORD) {
     return res.status(401).json({ error: "Incorrect admin password" });
   }
-  if (!product || !imageUrl) {
+  if ((!product && !customSlug) || !imageUrl) {
     return res.status(400).json({ error: "Missing product or imageUrl" });
   }
 
   try {
     const manifest = await loadManifest();
-    if (manifest[product]) {
+
+    if (customSlug) {
+      if (manifest.customProducts && manifest.customProducts[customSlug]) {
+        const entry = manifest.customProducts[customSlug];
+        entry.images = Array.isArray(entry.images) ? entry.images.filter((u) => u !== imageUrl) : [];
+      }
+    } else if (manifest[product]) {
       if (!Array.isArray(manifest[product].images)) {
         // Migrate older fixed-slot uploads (numeric keys "0","1","2") into the array format
         const numericKeys = Object.keys(manifest[product]).filter((k) => /^\d+$/.test(k)).sort((a, b) => a - b);
