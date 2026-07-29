@@ -1,6 +1,7 @@
 // /api/delete-photo.js
-// Removes one photo (identified by its URL) from a product's gallery array,
-// and deletes the underlying file from Blob storage.
+// Removes a photo from a product slot: deletes the file from Blob storage
+// and removes its entry from manifest.json, so the site falls back to the
+// placeholder box for that slot again.
 
 import { put, list, del } from "@vercel/blob";
 
@@ -9,25 +10,26 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const { password, product, imageUrl } = req.body || {};
+  const { password, product, slotIndex } = req.body || {};
 
   if (!password || password !== process.env.ADMIN_PASSWORD) {
     return res.status(401).json({ error: "Incorrect admin password" });
   }
-  if (!product || !imageUrl) {
-    return res.status(400).json({ error: "Missing product or imageUrl" });
+  if (!product || slotIndex === undefined) {
+    return res.status(400).json({ error: "Missing product or slotIndex" });
   }
 
   try {
     const manifest = await loadManifest();
-    if (manifest[product] && Array.isArray(manifest[product].images)) {
-      manifest[product].images = manifest[product].images.filter((u) => u !== imageUrl);
-    }
+    const existingUrl = manifest[product] && manifest[product][slotIndex];
 
-    try {
-      await del(imageUrl);
-    } catch (e) {
-      console.warn("Could not delete blob file (continuing anyway):", e);
+    if (existingUrl) {
+      try {
+        await del(existingUrl); // remove the actual file from Blob storage
+      } catch (e) {
+        console.warn("Could not delete blob file (continuing anyway):", e);
+      }
+      delete manifest[product][slotIndex];
     }
 
     await put("manifest.json", JSON.stringify(manifest, null, 2), {
