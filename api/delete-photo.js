@@ -20,7 +20,13 @@ export default async function handler(req, res) {
 
   try {
     const manifest = await loadManifest();
-    if (manifest[product] && Array.isArray(manifest[product].images)) {
+    if (manifest[product]) {
+      if (!Array.isArray(manifest[product].images)) {
+        // Migrate older fixed-slot uploads (numeric keys "0","1","2") into the array format
+        const numericKeys = Object.keys(manifest[product]).filter((k) => /^\d+$/.test(k)).sort((a, b) => a - b);
+        manifest[product].images = numericKeys.map((k) => manifest[product][k]).filter(Boolean);
+        numericKeys.forEach((k) => delete manifest[product][k]);
+      }
       manifest[product].images = manifest[product].images.filter((u) => u !== imageUrl);
     }
 
