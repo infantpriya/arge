@@ -913,11 +913,14 @@ function renderProducts(){
    New uploads are stored as manifest[product].images = [url, url, ...] (any count).
    Older uploads from before this change may still be stored as numeric keys
    ("0","1","2") -- those are read the same way for backward compatibility. */
+const artByCategory = {textiles:"art-loom", decor:"art-weave", lifestyle:"art-grain"};
+
 async function applyUploadedPhotos(){
   try{
     const res = await fetch('/api/get-manifest');
     if(!res.ok) return;
     const manifest = await res.json();
+
     products.forEach(p=>{
       const entry = manifest[p.name];
       if(!entry) return;
@@ -934,6 +937,26 @@ async function applyUploadedPhotos(){
       }
       if(entry.description && entry.description.trim()){ p.desc = entry.description.trim(); }
     });
+
+    // Merge in products added from /admin.html ("+ Add New Product")
+    if(manifest.customProducts){
+      Object.entries(manifest.customProducts).forEach(([slug, cp])=>{
+        if(products.some(p=>p.slug===slug)) return; // already merged (e.g. hot-reload)
+        products.push({
+          name: cp.name,
+          cat: cp.cat,
+          art: artByCategory[cp.cat] || "art-loom",
+          oem: !!cp.oem,
+          desc: cp.desc || "Details for this product are coming soon.",
+          features: Array.isArray(cp.features) ? cp.features : [],
+          slug: slug,
+          isCustom: true,
+          slots: Array.isArray(cp.images) && cp.images.length
+            ? cp.images.map(url => ({img:url, stock:false}))
+            : [],
+        });
+      });
+    }
   }catch(err){ console.warn('Photo manifest unavailable, using placeholders.', err); }
 }
 

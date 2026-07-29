@@ -186,107 +186,225 @@ async function loadManifest(){
   }catch{ manifest = {}; }
 }
 
-function getImages(productName){
-  const entry = manifest[productName];
+const CAT_KEYS = {"Home Textiles":"textiles", "Home Décor":"decor", "Natural Lifestyle Products":"lifestyle"};
+
+function getImages(target){
+  const entry = target.type === 'custom'
+    ? (manifest.customProducts && manifest.customProducts[target.slug])
+    : manifest[target.name];
   if(!entry) return [];
   if(Array.isArray(entry.images)) return entry.images;
-  // backward-compat: older uploads stored as numeric keys "0","1","2"
   const numericKeys = Object.keys(entry).filter(k => /^\d+$/.test(k)).sort((a,b)=>a-b);
   return numericKeys.map(k => entry[k]).filter(Boolean);
+}
+
+function getDescription(target){
+  if(target.type === 'custom'){
+    const entry = manifest.customProducts && manifest.customProducts[target.slug];
+    return (entry && entry.desc) || '';
+  }
+  return (manifest[target.name] && manifest[target.name].description) || '';
 }
 
 function renderProducts(){
   const container = document.getElementById('productList');
   container.innerHTML = '';
+
   PRODUCTS.forEach(cat=>{
+    const catKey = CAT_KEYS[cat.category];
     const h = document.createElement('div');
     h.className = 'category-title';
     h.textContent = cat.category;
     container.appendChild(h);
 
     cat.items.forEach(productName=>{
-      const block = document.createElement('div');
-      block.className = 'product-block';
-      block.innerHTML = `<h3>${productName}</h3>`;
-
-      const galleryRow = document.createElement('div');
-      galleryRow.className = 'gallery-row';
-      renderGallery(galleryRow, productName);
-      block.appendChild(galleryRow);
-
-      const descWrap = document.createElement('div');
-      descWrap.className = 'desc-wrap';
-      const existingDesc = (manifest[productName] && manifest[productName].description) || '';
-      descWrap.innerHTML = `
-        <label style="display:block; font-size:.8rem; color:var(--muted); margin-bottom:6px;">Product description (shown on the website)</label>
-        <div class="desc-toolbar">
-          <button type="button" class="fmt-btn" data-cmd="bold"><b>B</b></button>
-          <button type="button" class="fmt-btn" data-cmd="italic"><i>I</i></button>
-          <select class="font-size-select">
-            <option value="3">Normal size</option>
-            <option value="2">Small</option>
-            <option value="5">Large</option>
-            <option value="7">Extra large</option>
-          </select>
-        </div>
-        <div class="desc-input" contenteditable="true" data-placeholder="Leave blank to keep the default description written in the code.">${existingDesc}</div>
-        <div class="desc-hint">Select some text first, then click Bold/Italic or choose a size to apply it to just that selection.</div>
-        <div style="display:flex; align-items:center; gap:12px; margin-top:8px;">
-          <button type="button" class="save-desc-btn">Save Description</button>
-          <span class="desc-status"></span>
-        </div>
-      `;
-      const editor = descWrap.querySelector('.desc-input');
-      const saveBtn = descWrap.querySelector('.save-desc-btn');
-      const statusEl = descWrap.querySelector('.desc-status');
-      descWrap.querySelectorAll('.fmt-btn').forEach(btn=>{
-        btn.addEventListener('click', ()=>{ editor.focus(); document.execCommand(btn.dataset.cmd, false, null); });
-      });
-      descWrap.querySelector('.font-size-select').addEventListener('change', (e)=>{
-        editor.focus();
-        document.execCommand('fontSize', false, e.target.value);
-        e.target.value = '3';
-      });
-      saveBtn.addEventListener('click', ()=> handleSaveDescription(productName, editor.innerHTML, statusEl));
-      block.appendChild(descWrap);
-
-      container.appendChild(block);
+      container.appendChild(buildProductBlock({type:'builtin', name:productName}, productName));
     });
+
+    const customEntries = Object.entries(manifest.customProducts || {}).filter(([,cp]) => cp.cat === catKey);
+    customEntries.forEach(([slug, cp])=>{
+      container.appendChild(buildProductBlock({type:'custom', slug, name:cp.name}, cp.name, true));
+    });
+
+    container.appendChild(buildAddProductButton(catKey, cat.category));
   });
 }
 
-function renderGallery(galleryRow, productName){
+function buildProductBlock(target, displayName, isCustom){
+  const block = document.createElement('div');
+  block.className = 'product-block';
+  block.innerHTML = `<h3>${displayName}${isCustom ? ' <span style="font-size:.7rem; color:var(--gold); font-weight:400;">(custom)</span>' : ''}</h3>`;
+
+  const galleryRow = document.createElement('div');
+  galleryRow.className = 'gallery-row';
+  renderGallery(galleryRow, target);
+  block.appendChild(galleryRow);
+
+  const descWrap = document.createElement('div');
+  descWrap.className = 'desc-wrap';
+  const existingDesc = getDescription(target);
+  descWrap.innerHTML = `
+    <label style="display:block; font-size:.8rem; color:var(--muted); margin-bottom:6px;">Product description (shown on the website)</label>
+    <div class="desc-toolbar">
+      <button type="button" class="fmt-btn" data-cmd="bold"><b>B</b></button>
+      <button type="button" class="fmt-btn" data-cmd="italic"><i>I</i></button>
+      <select class="font-size-select">
+        <option value="3">Normal size</option>
+        <option value="2">Small</option>
+        <option value="5">Large</option>
+        <option value="7">Extra large</option>
+      </select>
+    </div>
+    <div class="desc-input" contenteditable="true" data-placeholder="${isCustom ? 'Write a description for this product.' : 'Leave blank to keep the default description written in the code.'}">${existingDesc}</div>
+    <div class="desc-hint">Select some text first, then click Bold/Italic or choose a size to apply it to just that selection.</div>
+    <div style="display:flex; align-items:center; gap:12px; margin-top:8px;">
+      <button type="button" class="save-desc-btn">Save Description</button>
+      <span class="desc-status"></span>
+      ${isCustom ? '<button type="button" class="delete-product-btn" style="margin-left:auto; background:transparent; border:1px solid #a0402a; color:#a0402a; border-radius:3px; padding:9px 14px; font-size:.8rem; cursor:pointer;">Delete Product</button>' : ''}
+    </div>
+  `;
+  const editor = descWrap.querySelector('.desc-input');
+  const saveBtn = descWrap.querySelector('.save-desc-btn');
+  const statusEl = descWrap.querySelector('.desc-status');
+  descWrap.querySelectorAll('.fmt-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{ editor.focus(); document.execCommand(btn.dataset.cmd, false, null); });
+  });
+  descWrap.querySelector('.font-size-select').addEventListener('change', (e)=>{
+    editor.focus();
+    document.execCommand('fontSize', false, e.target.value);
+    e.target.value = '3';
+  });
+  saveBtn.addEventListener('click', ()=> handleSaveDescription(target, editor.innerHTML, statusEl));
+  if(isCustom){
+    descWrap.querySelector('.delete-product-btn').addEventListener('click', ()=> handleDeleteProduct(target.slug, displayName));
+  }
+  block.appendChild(descWrap);
+  return block;
+}
+
+function buildAddProductButton(catKey, catLabel){
+  const wrap = document.createElement('div');
+  wrap.style.marginBottom = '30px';
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.textContent = '+ Add New Product to ' + catLabel;
+  btn.style.cssText = 'padding:12px 20px; background:transparent; border:1.5px dashed var(--gold); color:var(--gold); border-radius:4px; font-size:.86rem; cursor:pointer; width:100%;';
+  btn.addEventListener('click', ()=>{
+    wrap.innerHTML = '';
+    wrap.appendChild(buildAddProductForm(catKey, catLabel));
+  });
+  wrap.appendChild(btn);
+  return wrap;
+}
+
+function buildAddProductForm(catKey, catLabel){
+  const form = document.createElement('div');
+  form.className = 'product-block';
+  form.innerHTML = `
+    <h3>New Product — ${catLabel}</h3>
+    <label style="display:block; font-size:.8rem; color:var(--muted); margin:12px 0 6px;">Product name</label>
+    <input type="text" class="new-prod-name" style="width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:3px; font-family:'Jost',sans-serif;" placeholder="e.g. Wooden Wall Décor">
+    <label style="display:block; font-size:.8rem; color:var(--muted); margin:14px 0 6px;">Description</label>
+    <textarea class="new-prod-desc" style="width:100%; min-height:80px; padding:10px 12px; border:1px solid var(--line); border-radius:3px; font-family:'Jost',sans-serif; font-size:.9rem;" placeholder="A short description shown on the product page."></textarea>
+    <label style="display:block; font-size:.8rem; color:var(--muted); margin:14px 0 6px;">Feature bullets (one per line)</label>
+    <textarea class="new-prod-features" style="width:100%; min-height:70px; padding:10px 12px; border:1px solid var(--line); border-radius:3px; font-family:'Jost',sans-serif; font-size:.9rem;" placeholder="Handcrafted&#10;Natural materials&#10;Multiple sizes available"></textarea>
+    <label style="display:flex; align-items:center; gap:8px; margin-top:14px; font-size:.85rem; color:var(--ink);">
+      <input type="checkbox" class="new-prod-oem"> Show "OEM" badge for this product
+    </label>
+    <div style="display:flex; gap:12px; margin-top:16px;">
+      <button type="button" class="create-prod-btn" style="padding:10px 20px; background:var(--forest); color:var(--ivory); border:none; border-radius:3px; font-size:.85rem; cursor:pointer;">Create Product</button>
+      <button type="button" class="cancel-prod-btn" style="padding:10px 20px; background:transparent; border:1px solid var(--line); border-radius:3px; font-size:.85rem; cursor:pointer;">Cancel</button>
+      <span class="create-prod-status" style="font-size:.8rem; align-self:center;"></span>
+    </div>
+  `;
+  form.querySelector('.cancel-prod-btn').addEventListener('click', ()=> renderProducts());
+  form.querySelector('.create-prod-btn').addEventListener('click', async ()=>{
+    const name = form.querySelector('.new-prod-name').value.trim();
+    const desc = form.querySelector('.new-prod-desc').value.trim();
+    const features = form.querySelector('.new-prod-features').value.split('\n').map(s=>s.trim()).filter(Boolean);
+    const oem = form.querySelector('.new-prod-oem').checked;
+    const statusEl = form.querySelector('.create-prod-status');
+    if(!name){ statusEl.textContent = 'Please enter a product name.'; statusEl.style.color = '#a0402a'; return; }
+    statusEl.textContent = 'Creating...'; statusEl.style.color = 'var(--muted)';
+    try{
+      const res = await fetch('/api/save-product', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ password: ADMIN_PASSWORD, name, cat: catKey, desc, features, oem }),
+      });
+      const data = await res.json();
+      if(!res.ok){ statusEl.textContent = data.error || 'Failed to create product'; statusEl.style.color = '#a0402a'; return; }
+      manifest = data.manifest;
+      showToast('Product created — add photos below.');
+      renderProducts();
+    }catch(err){
+      statusEl.textContent = 'Failed. Check your connection.'; statusEl.style.color = '#a0402a';
+    }
+  });
+  return form;
+}
+
+async function handleDeleteProduct(slug, displayName){
+  if(!confirm(`Permanently delete "${displayName}" and all its photos? This can't be undone.`)) return;
+  showToast('Deleting product...');
+  try{
+    const res = await fetch('/api/delete-product', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ password: ADMIN_PASSWORD, slug }),
+    });
+    const data = await res.json();
+    if(!res.ok){ showToast(data.error || 'Delete failed', true); return; }
+    manifest = data.manifest;
+    showToast('Product deleted.');
+    renderProducts();
+  }catch(err){
+    showToast('Delete failed. Check your connection.', true);
+  }
+}
+
+function renderGallery(galleryRow, target){
   galleryRow.innerHTML = '';
-  const images = getImages(productName);
+  const images = getImages(target);
 
   images.forEach(url=>{
     const thumb = document.createElement('div');
     thumb.className = 'thumb';
     thumb.innerHTML = `
-      <img src="${url}" alt="${productName}">
+      <img src="${url}" alt="${target.name}">
       <span class="status-chip">Live</span>
       <button type="button" class="remove-btn" title="Remove">×</button>
     `;
-    thumb.querySelector('.remove-btn').addEventListener('click', ()=> handleRemove(productName, url, galleryRow));
+    thumb.querySelector('.remove-btn').addEventListener('click', ()=> handleRemove(target, url, galleryRow));
     galleryRow.appendChild(thumb);
   });
 
   const addTile = document.createElement('label');
   addTile.className = 'add-tile';
   addTile.innerHTML = `<span class="plus">+</span><span>Add Photo</span><input type="file" accept="image/*">`;
-  addTile.querySelector('input').addEventListener('change', (e)=> handleUpload(e, productName, galleryRow));
+  addTile.querySelector('input').addEventListener('change', (e)=> handleUpload(e, target, galleryRow));
   galleryRow.appendChild(addTile);
 }
 
-async function handleSaveDescription(productName, description, statusEl){
+async function handleSaveDescription(target, description, statusEl){
   statusEl.textContent = 'Saving...';
   statusEl.style.color = 'var(--muted)';
   try{
-    const res = await fetch('/api/save-description', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ password: ADMIN_PASSWORD, product: productName, description }),
-    });
+    let res;
+    if(target.type === 'custom'){
+      const cp = manifest.customProducts[target.slug];
+      res = await fetch('/api/save-product', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ password: ADMIN_PASSWORD, slug: target.slug, name: cp.name, cat: cp.cat, desc: description, features: cp.features, oem: cp.oem }),
+      });
+    } else {
+      res = await fetch('/api/save-description', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ password: ADMIN_PASSWORD, product: target.name, description }),
+      });
+    }
     const data = await res.json();
     if(!res.ok){
       statusEl.textContent = data.error || 'Save failed';
@@ -303,7 +421,7 @@ async function handleSaveDescription(productName, description, statusEl){
   }
 }
 
-async function handleUpload(e, productName, galleryRow){
+async function handleUpload(e, target, galleryRow){
   const file = e.target.files[0];
   if(!file) return;
   if(file.size > 8 * 1024 * 1024){
@@ -313,16 +431,12 @@ async function handleUpload(e, productName, galleryRow){
   showToast('Uploading...');
   try{
     const dataBase64 = await fileToBase64(file);
+    const body = { password: ADMIN_PASSWORD, filename: file.name, contentType: file.type, dataBase64 };
+    if(target.type === 'custom') body.customSlug = target.slug; else body.product = target.name;
     const res = await fetch('/api/upload-photo', {
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({
-        password: ADMIN_PASSWORD,
-        product: productName,
-        filename: file.name,
-        contentType: file.type,
-        dataBase64,
-      }),
+      body: JSON.stringify(body),
     });
     const data = await res.json();
     if(!res.ok){
@@ -331,7 +445,7 @@ async function handleUpload(e, productName, galleryRow){
       return;
     }
     manifest = data.manifest;
-    renderGallery(galleryRow, productName);
+    renderGallery(galleryRow, target);
     showToast('Photo uploaded — live on the site shortly.');
   }catch(err){
     console.error(err);
@@ -339,14 +453,16 @@ async function handleUpload(e, productName, galleryRow){
   }
 }
 
-async function handleRemove(productName, imageUrl, galleryRow){
-  if(!confirm(`Remove this photo from ${productName}? This can't be undone.`)) return;
+async function handleRemove(target, imageUrl, galleryRow){
+  if(!confirm(`Remove this photo from ${target.name}? This can't be undone.`)) return;
   showToast('Removing...');
   try{
+    const body = { password: ADMIN_PASSWORD, imageUrl };
+    if(target.type === 'custom') body.customSlug = target.slug; else body.product = target.name;
     const res = await fetch('/api/delete-photo', {
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ password: ADMIN_PASSWORD, product: productName, imageUrl }),
+      body: JSON.stringify(body),
     });
     const data = await res.json();
     if(!res.ok){
@@ -354,7 +470,7 @@ async function handleRemove(productName, imageUrl, galleryRow){
       return;
     }
     manifest = data.manifest;
-    renderGallery(galleryRow, productName);
+    renderGallery(galleryRow, target);
     showToast('Photo removed.');
   }catch(err){
     console.error(err);
