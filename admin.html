@@ -16,38 +16,48 @@
   .wrap{max-width:920px; margin:0 auto; padding:40px 24px 100px;}
   header{background:var(--ivory); border-bottom:1px solid var(--line); padding:20px 0;}
   header .wrap{padding:0 24px; display:flex; align-items:center; justify-content:space-between;}
+  .logout-btn{
+    display:none; padding:9px 18px; background:transparent; color:var(--forest); border:1px solid var(--forest);
+    border-radius:3px; font-size:.82rem; cursor:pointer; font-family:'Jost',sans-serif;
+  }
+  .logout-btn:hover{background:var(--forest); color:var(--ivory);}
+  .logout-btn.show{display:inline-block;}
+
   .lock-screen{max-width:380px; margin:80px auto; text-align:center;}
   .lock-screen input{width:100%; padding:14px; border:1px solid var(--line); border-radius:3px; font-size:1rem; margin:16px 0;}
   .lock-screen button{width:100%; padding:14px; background:var(--forest); color:var(--ivory); border:none; border-radius:3px; font-size:.95rem; cursor:pointer;}
+  .lock-screen button:disabled{opacity:.6; cursor:default;}
   .lock-msg{color:#a0402a; font-size:.85rem; min-height:20px;}
   #app{display:none;}
   .category-title{margin:36px 0 16px; font-size:1.1rem; color:var(--gold); text-transform:uppercase; letter-spacing:.08em; font-family:'Jost',sans-serif; font-weight:600;}
   .product-block{border:1px solid var(--line); border-radius:4px; padding:22px; margin-bottom:20px; background:#fff;}
   .product-block h3{font-size:1.05rem;}
-  .slots{display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-top:14px;}
-  @media (max-width:640px){.slots{grid-template-columns:1fr;}}
-  .slot{
-    border:1.5px dashed var(--line); border-radius:3px; aspect-ratio:4/3; position:relative;
-    display:flex; align-items:center; justify-content:center; overflow:hidden; cursor:pointer; background:var(--ivory);
+
+  .gallery-row{display:flex; flex-wrap:wrap; gap:14px; margin-top:14px;}
+  .thumb{
+    width:130px; height:98px; border-radius:3px; position:relative; overflow:hidden;
+    border:1.5px solid var(--gold); background:var(--ivory); flex-shrink:0;
   }
-  .slot.has-image{border-style:solid; border-color:var(--gold);}
-  .slot img{width:100%; height:100%; object-fit:cover; position:absolute; inset:0;}
-  .slot .label{font-size:.72rem; color:var(--muted); text-align:center; padding:0 10px;}
-  .slot .overlay{
-    position:absolute; inset:0; background:rgba(18,58,44,0.55); color:#fff; font-size:.75rem;
-    display:flex; align-items:center; justify-content:center; opacity:0; transition:.2s;
+  .thumb img{width:100%; height:100%; object-fit:cover;}
+  .thumb .remove-btn{
+    position:absolute; top:4px; right:4px; width:22px; height:22px; border-radius:50%; border:none;
+    background:rgba(139,44,25,0.9); color:#fff; font-size:.85rem; line-height:1; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
   }
-  .slot:hover .overlay{opacity:1;}
-  .slot input[type=file]{display:none;}
-  .remove-btn{
-    position:absolute; bottom:6px; right:6px; z-index:6; font-size:.68rem; padding:4px 10px;
-    background:rgba(139,44,25,0.9); color:#fff; border:none; border-radius:10px; cursor:pointer;
-  }
-  .remove-btn:hover{background:#8a3b22;}
-  .status-chip{
-    position:absolute; top:6px; right:6px; font-size:.65rem; padding:3px 8px; border-radius:10px;
+  .thumb .remove-btn:hover{background:#8a3b22;}
+  .thumb .status-chip{
+    position:absolute; bottom:4px; left:4px; font-size:.6rem; padding:2px 7px; border-radius:8px;
     background:var(--forest); color:var(--ivory);
   }
+  .add-tile{
+    width:130px; height:98px; border-radius:3px; border:1.5px dashed var(--line); background:var(--ivory);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; cursor:pointer;
+    color:var(--muted); font-size:.72rem; text-align:center; flex-shrink:0;
+  }
+  .add-tile:hover{border-color:var(--gold); color:var(--gold);}
+  .add-tile .plus{font-size:1.3rem; line-height:1;}
+  .add-tile input[type=file]{display:none;}
+
   .toast{
     position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:var(--forest); color:var(--ivory);
     padding:12px 22px; border-radius:4px; font-size:.88rem; opacity:0; transition:.3s; pointer-events:none; z-index:50;
@@ -55,14 +65,13 @@
   .toast.show{opacity:1;}
   .toast.err{background:#8a3b22;}
   .help{font-size:.82rem; color:var(--muted); margin-bottom:30px; max-width:60ch;}
-  .desc-wrap{border-top:1px solid var(--line); padding-top:14px;}
+  .desc-wrap{border-top:1px solid var(--line); padding-top:14px; margin-top:18px;}
   .desc-toolbar{display:flex; gap:6px; align-items:center; margin-bottom:8px; flex-wrap:wrap;}
   .desc-toolbar button{
     padding:6px 12px; border:1px solid var(--line); background:#fff; border-radius:3px;
     font-size:.82rem; cursor:pointer; color:var(--ink);
   }
   .desc-toolbar button:hover{border-color:var(--gold); background:var(--ivory);}
-  .desc-toolbar button.active{background:var(--forest); color:var(--ivory); border-color:var(--forest);}
   .desc-toolbar select{
     padding:6px 10px; border:1px solid var(--line); border-radius:3px; font-size:.82rem;
     background:#fff; color:var(--ink);
@@ -88,20 +97,23 @@
 <header>
   <div class="wrap">
     <h2 style="font-size:1.1rem;">Angel Roch — Photo Manager</h2>
-    <span style="font-size:.8rem; color:var(--muted);">Private admin page — not linked from the public site</span>
+    <div style="display:flex; align-items:center; gap:16px;">
+      <span style="font-size:.8rem; color:var(--muted);">Private admin page — not linked from the public site</span>
+      <button class="logout-btn" id="logoutBtn">Log Out</button>
+    </div>
   </div>
 </header>
 
 <div class="lock-screen" id="lockScreen">
   <h2>Enter admin password</h2>
-  <p style="font-size:.85rem; color:var(--muted);">This unlocks photo uploads for this session only.</p>
+  <p style="font-size:.85rem; color:var(--muted);">This unlocks photo &amp; description editing for this session only.</p>
   <input type="password" id="pwInput" placeholder="Admin password" autocomplete="off">
   <button id="unlockBtn">Unlock</button>
   <div class="lock-msg" id="lockMsg"></div>
 </div>
 
 <div class="wrap" id="app">
-  <p class="help">Click any box below to choose a photo (or drag one in) for that product and shot. Photos go live on the website within about 30 seconds — no code changes needed. Recommended: photos under 5MB, roughly square or 4:3, JPG or PNG.</p>
+  <p class="help">Add as many sample photos as you like for each product — click "Add Photo" to add one, or the × on any photo to remove it. Changes go live on the website within about 30 seconds — no code changes needed. Recommended: photos under 5MB, JPG or PNG.</p>
   <div id="productList"></div>
 </div>
 
@@ -111,25 +123,9 @@
 /* Keep this list in sync with the product cards on the main site (index.html).
    If you add a brand-new product there, add one line here too. */
 const PRODUCTS = [
-  {category:"Home Textiles", items:[
-    {name:"Sungudi Sarees", shots:["Texture close-up","Full drape","Styled setting"]},
-    {name:"Cotton Cushion Covers", shots:["Fabric texture","Flat lay","On sofa / lifestyle"]},
-    {name:"Cotton Cushions", shots:["Texture close-up","Full product","Room setting"]},
-    {name:"Table Runners", shots:["Weave detail","Full length","Table styling"]},
-    {name:"Table Mats", shots:["Texture close-up","Set of mats","Table styling"]},
-    {name:"Kitchen Linen", shots:["Fabric detail","Folded stack","In-use styling"]},
-  ]},
-  {category:"Home Décor", items:[
-    {name:"Bamboo Baskets", shots:["Weave detail","Full basket","Styled display"]},
-    {name:"Decorative Storage Baskets", shots:["Material detail","Full product","Room setting"]},
-    {name:"Handmade Home Accessories", shots:["Craft detail","Full product","Styled shot"]},
-    {name:"Gift Collections", shots:["Packaging detail","Full set","Unboxed styling"]},
-  ]},
-  {category:"Natural Lifestyle Products", items:[
-    {name:"Neem Wooden Combs", shots:["Grain close-up","Full comb","Lifestyle shot"]},
-    {name:"Wooden Personal Care Accessories", shots:["Material detail","Full product","Lifestyle shot"]},
-    {name:"Eco-friendly Gift Products", shots:["Material detail","Full product","Gift styling"]},
-  ]},
+  {category:"Home Textiles", items:["Sungudi Sarees","Cotton Cushion Covers","Cotton Cushions","Table Runners","Table Mats","Kitchen Linen"]},
+  {category:"Home Décor", items:["Bamboo Baskets","Decorative Storage Baskets","Handmade Home Accessories","Gift Collections"]},
+  {category:"Natural Lifestyle Products", items:["Neem Wooden Combs","Wooden Personal Care Accessories","Eco-friendly Gift Products"]},
 ];
 
 let ADMIN_PASSWORD = null;
@@ -137,18 +133,50 @@ let manifest = {};
 
 document.getElementById('unlockBtn').addEventListener('click', unlock);
 document.getElementById('pwInput').addEventListener('keydown', e => { if(e.key === 'Enter') unlock(); });
+document.getElementById('logoutBtn').addEventListener('click', logout);
 
 async function unlock(){
   const pw = document.getElementById('pwInput').value;
   if(!pw){ setLockMsg('Enter a password.'); return; }
-  ADMIN_PASSWORD = pw;
+  const btn = document.getElementById('unlockBtn');
+  btn.disabled = true;
   setLockMsg('Checking...');
-  // We verify by attempting a harmless call; real check happens on first real upload too.
-  document.getElementById('lockScreen').style.display = 'none';
-  document.getElementById('app').style.display = 'block';
-  await loadManifest();
-  renderProducts();
+  try{
+    const res = await fetch('/api/verify-password', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ password: pw }),
+    });
+    const data = await res.json();
+    if(!res.ok || !data.ok){
+      setLockMsg('Incorrect password. Try again.');
+      document.getElementById('pwInput').value = '';
+      btn.disabled = false;
+      return;
+    }
+    ADMIN_PASSWORD = pw;
+    document.getElementById('lockScreen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    document.getElementById('logoutBtn').classList.add('show');
+    await loadManifest();
+    renderProducts();
+  }catch(err){
+    setLockMsg('Could not reach the server. Check your connection and try again.');
+    btn.disabled = false;
+  }
 }
+
+function logout(){
+  ADMIN_PASSWORD = null;
+  manifest = {};
+  document.getElementById('pwInput').value = '';
+  document.getElementById('lockMsg').textContent = '';
+  document.getElementById('unlockBtn').disabled = false;
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('logoutBtn').classList.remove('show');
+  document.getElementById('lockScreen').style.display = 'block';
+}
+
 function setLockMsg(t){ document.getElementById('lockMsg').textContent = t; }
 
 async function loadManifest(){
@@ -156,6 +184,15 @@ async function loadManifest(){
     const r = await fetch('/api/get-manifest');
     manifest = await r.json();
   }catch{ manifest = {}; }
+}
+
+function getImages(productName){
+  const entry = manifest[productName];
+  if(!entry) return [];
+  if(Array.isArray(entry.images)) return entry.images;
+  // backward-compat: older uploads stored as numeric keys "0","1","2"
+  const numericKeys = Object.keys(entry).filter(k => /^\d+$/.test(k)).sort((a,b)=>a-b);
+  return numericKeys.map(k => entry[k]).filter(Boolean);
 }
 
 function renderProducts(){
@@ -167,43 +204,21 @@ function renderProducts(){
     h.textContent = cat.category;
     container.appendChild(h);
 
-    cat.items.forEach(product=>{
+    cat.items.forEach(productName=>{
       const block = document.createElement('div');
       block.className = 'product-block';
-      block.innerHTML = `<h3>${product.name}</h3>`;
-      const slotsWrap = document.createElement('div');
-      slotsWrap.className = 'slots';
+      block.innerHTML = `<h3>${productName}</h3>`;
 
-      product.shots.forEach((shotType, i)=>{
-        const existingUrl = manifest[product.name] && manifest[product.name][i];
-        const slot = document.createElement('label');
-        slot.className = 'slot' + (existingUrl ? ' has-image' : '');
-        slot.innerHTML = `
-          ${existingUrl ? `<img src="${existingUrl}" alt="${product.name} ${shotType}">` : `<span class="label">${shotType}<br>Click to upload</span>`}
-          <span class="overlay">${existingUrl ? 'Click to replace' : 'Click to upload'}</span>
-          ${existingUrl ? '<span class="status-chip">Live</span>' : ''}
-          ${existingUrl ? '<button type="button" class="remove-btn">Remove</button>' : ''}
-          <input type="file" accept="image/*">
-        `;
-        const input = slot.querySelector('input');
-        input.addEventListener('change', (e)=> handleUpload(e, product.name, i, slot, shotType));
-        const removeBtn = slot.querySelector('.remove-btn');
-        if(removeBtn){
-          removeBtn.addEventListener('click', (e)=>{
-            e.preventDefault(); e.stopPropagation();
-            handleRemove(product.name, i, slot, shotType);
-          });
-        }
-        slotsWrap.appendChild(slot);
-      });
-
-      block.appendChild(slotsWrap);
+      const galleryRow = document.createElement('div');
+      galleryRow.className = 'gallery-row';
+      renderGallery(galleryRow, productName);
+      block.appendChild(galleryRow);
 
       const descWrap = document.createElement('div');
       descWrap.className = 'desc-wrap';
-      const existingDesc = (manifest[product.name] && manifest[product.name].description) || '';
+      const existingDesc = (manifest[productName] && manifest[productName].description) || '';
       descWrap.innerHTML = `
-        <label style="display:block; margin-top:16px; font-size:.8rem; color:var(--muted); margin-bottom:6px;">Product description (shown on the website)</label>
+        <label style="display:block; font-size:.8rem; color:var(--muted); margin-bottom:6px;">Product description (shown on the website)</label>
         <div class="desc-toolbar">
           <button type="button" class="fmt-btn" data-cmd="bold"><b>B</b></button>
           <button type="button" class="fmt-btn" data-cmd="italic"><i>I</i></button>
@@ -224,25 +239,43 @@ function renderProducts(){
       const editor = descWrap.querySelector('.desc-input');
       const saveBtn = descWrap.querySelector('.save-desc-btn');
       const statusEl = descWrap.querySelector('.desc-status');
-
       descWrap.querySelectorAll('.fmt-btn').forEach(btn=>{
-        btn.addEventListener('click', ()=>{
-          editor.focus();
-          document.execCommand(btn.dataset.cmd, false, null);
-        });
+        btn.addEventListener('click', ()=>{ editor.focus(); document.execCommand(btn.dataset.cmd, false, null); });
       });
       descWrap.querySelector('.font-size-select').addEventListener('change', (e)=>{
         editor.focus();
         document.execCommand('fontSize', false, e.target.value);
         e.target.value = '3';
       });
-
-      saveBtn.addEventListener('click', ()=> handleSaveDescription(product.name, editor.innerHTML, statusEl));
+      saveBtn.addEventListener('click', ()=> handleSaveDescription(productName, editor.innerHTML, statusEl));
       block.appendChild(descWrap);
 
       container.appendChild(block);
     });
   });
+}
+
+function renderGallery(galleryRow, productName){
+  galleryRow.innerHTML = '';
+  const images = getImages(productName);
+
+  images.forEach(url=>{
+    const thumb = document.createElement('div');
+    thumb.className = 'thumb';
+    thumb.innerHTML = `
+      <img src="${url}" alt="${productName}">
+      <span class="status-chip">Live</span>
+      <button type="button" class="remove-btn" title="Remove">×</button>
+    `;
+    thumb.querySelector('.remove-btn').addEventListener('click', ()=> handleRemove(productName, url, galleryRow));
+    galleryRow.appendChild(thumb);
+  });
+
+  const addTile = document.createElement('label');
+  addTile.className = 'add-tile';
+  addTile.innerHTML = `<span class="plus">+</span><span>Add Photo</span><input type="file" accept="image/*">`;
+  addTile.querySelector('input').addEventListener('change', (e)=> handleUpload(e, productName, galleryRow));
+  galleryRow.appendChild(addTile);
 }
 
 async function handleSaveDescription(productName, description, statusEl){
@@ -270,7 +303,7 @@ async function handleSaveDescription(productName, description, statusEl){
   }
 }
 
-async function handleUpload(e, productName, slotIndex, slotEl, shotType){
+async function handleUpload(e, productName, galleryRow){
   const file = e.target.files[0];
   if(!file) return;
   if(file.size > 8 * 1024 * 1024){
@@ -286,7 +319,6 @@ async function handleUpload(e, productName, slotIndex, slotEl, shotType){
       body: JSON.stringify({
         password: ADMIN_PASSWORD,
         product: productName,
-        slotIndex,
         filename: file.name,
         contentType: file.type,
         dataBase64,
@@ -294,24 +326,12 @@ async function handleUpload(e, productName, slotIndex, slotEl, shotType){
     });
     const data = await res.json();
     if(!res.ok){
-      if(res.status === 401){ showToast('Incorrect admin password — reload and try again.', true); }
+      if(res.status === 401){ showToast('Incorrect admin password — please log out and back in.', true); }
       else{ showToast(data.error || 'Upload failed', true); }
       return;
     }
     manifest = data.manifest;
-    slotEl.classList.add('has-image');
-    slotEl.innerHTML = `
-      <img src="${data.url}" alt="${productName} ${shotType}">
-      <span class="overlay">Click to replace</span>
-      <span class="status-chip">Live</span>
-      <button type="button" class="remove-btn">Remove</button>
-      <input type="file" accept="image/*">
-    `;
-    slotEl.querySelector('input').addEventListener('change', (e)=> handleUpload(e, productName, slotIndex, slotEl, shotType));
-    slotEl.querySelector('.remove-btn').addEventListener('click', (e)=>{
-      e.preventDefault(); e.stopPropagation();
-      handleRemove(productName, slotIndex, slotEl, shotType);
-    });
+    renderGallery(galleryRow, productName);
     showToast('Photo uploaded — live on the site shortly.');
   }catch(err){
     console.error(err);
@@ -319,14 +339,14 @@ async function handleUpload(e, productName, slotIndex, slotEl, shotType){
   }
 }
 
-async function handleRemove(productName, slotIndex, slotEl, shotType){
-  if(!confirm(`Remove the "${shotType}" photo for ${productName}? This can't be undone.`)) return;
+async function handleRemove(productName, imageUrl, galleryRow){
+  if(!confirm(`Remove this photo from ${productName}? This can't be undone.`)) return;
   showToast('Removing...');
   try{
     const res = await fetch('/api/delete-photo', {
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ password: ADMIN_PASSWORD, product: productName, slotIndex }),
+      body: JSON.stringify({ password: ADMIN_PASSWORD, product: productName, imageUrl }),
     });
     const data = await res.json();
     if(!res.ok){
@@ -334,13 +354,7 @@ async function handleRemove(productName, slotIndex, slotEl, shotType){
       return;
     }
     manifest = data.manifest;
-    slotEl.classList.remove('has-image');
-    slotEl.innerHTML = `
-      <span class="label">${shotType}<br>Click to upload</span>
-      <span class="overlay">Click to upload</span>
-      <input type="file" accept="image/*">
-    `;
-    slotEl.querySelector('input').addEventListener('change', (e)=> handleUpload(e, productName, slotIndex, slotEl, shotType));
+    renderGallery(galleryRow, productName);
     showToast('Photo removed.');
   }catch(err){
     console.error(err);

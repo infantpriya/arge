@@ -709,23 +709,24 @@ const oemBenefits = [
   {t:"Clear Communication", d:"Regular updates from quotation through to shipment."},
 ];
 
-// each product: category key, oem flag, 3 generic shot slots, feature bullets
-function slots(stockImg){ return [{cap:"Overview", img:stockImg||null, stock:!!stockImg}, {cap:"Detail", img:null}, {cap:"Color / Packaging", img:null}]; }
+// each product starts with either a representative stock photo, or an empty gallery.
+// Real photos uploaded via /admin.html fully replace this with the actual set (any count).
+function initialGallery(stockImg){ return stockImg ? [{img:stockImg, stock:true}] : []; }
 
 const products = [
-  {name:"Sungudi Sarees", cat:"textiles", art:"art-fold", oem:false, desc:"Traditional tie-dye sarees from Madurai — handcrafted, lightweight, and rich in cultural heritage. Available in a wide range of colors and patterns.", features:["Handcrafted tie-dye","Lightweight cotton","Cultural heritage","Multiple color options"], slots:slots("https://images.unsplash.com/photo-1769059893121-bea9f89f817e?auto=format&fit=crop&w=900&q=70")},
-  {name:"Cotton Cushion Covers", cat:"textiles", art:"art-fold", oem:true, desc:"Available in solid colors, printed designs, embroidered styles, and handcrafted collections. Custom sizes on request.", features:["Solid / Printed / Embroidered","Custom sizes available","Private label options","Bulk export ready"], slots:slots("https://images.unsplash.com/photo-1705412877835-c0f9ccc5b440?auto=format&fit=crop&w=900&q=70")},
-  {name:"Cotton Cushions", cat:"textiles", art:"art-fold", oem:true, desc:"Decorative cushions designed for homes, hotels, and hospitality projects. Fully customizable to your specifications.", features:["Home & hospitality use","Customization available","Various fill options","Hotel-grade quality"], slots:slots("https://images.unsplash.com/photo-1770795946611-e60d748ca0ab?auto=format&fit=crop&w=900&q=70")},
-  {name:"Table Runners", cat:"textiles", art:"art-weave", oem:false, desc:"Elegant cotton table runners suitable for home décor, hospitality settings, and retail collections.", features:["Cotton & cotton blends","Multiple lengths","Hospitality grade","Custom prints available"], slots:slots("https://images.unsplash.com/photo-1705493254146-710211d851fa?auto=format&fit=crop&w=900&q=70")},
-  {name:"Table Mats", cat:"textiles", art:"art-weave", oem:false, desc:"Cotton table mats for dining tables and hospitality use. Available in sets with matching runners.", features:["Set options available","Washable cotton","Hospitality suitable","Matching runner sets"], slots:slots("https://images.unsplash.com/photo-1705493253575-e911888621ff?auto=format&fit=crop&w=900&q=70")},
-  {name:"Kitchen Linen", cat:"textiles", art:"art-fold", oem:false, desc:"Cotton kitchen towels, aprons, and oven mitts designed for retail and hospitality buyers.", features:["Kitchen towels & aprons","Absorbent cotton","Retail & hospitality","Custom branding"], slots:slots("https://images.unsplash.com/photo-1705493254703-0eb2b654d538?auto=format&fit=crop&w=900&q=70")},
-  {name:"Bamboo Baskets", cat:"decor", art:"art-basket", oem:false, desc:"Handwoven bamboo baskets for home storage, gift packaging, decorative displays, and retail collections.", features:["Handwoven bamboo","Multiple sizes","Gift packaging use","Retail collections"], slots:slots("https://images.unsplash.com/photo-1578678809626-a3741782f0b8?auto=format&fit=crop&w=900&q=70")},
-  {name:"Decorative Storage Baskets", cat:"decor", art:"art-basket", oem:false, desc:"Artisan-crafted storage baskets combining functionality with aesthetic appeal for modern interiors.", features:["Artisan crafted","Interior design appeal","Various materials","Nesting sets available"], slots:slots("https://images.unsplash.com/photo-1481061730414-e888962bd2c0?auto=format&fit=crop&w=900&q=70")},
-  {name:"Handmade Home Accessories", cat:"decor", art:"art-weave", oem:false, desc:"Curated handmade accessories that add artisan character to any living space or retail collection.", features:["Artisan made","Unique designs","Retail ready","Gift suitable"], slots:slots("https://images.unsplash.com/photo-1622153093514-4dd0078ac132?auto=format&fit=crop&w=900&q=70")},
-  {name:"Gift Collections", cat:"decor", art:"art-weave", oem:true, desc:"Curated gift sets combining textiles and décor items — suitable for retail, corporate gifting, and hospitality.", features:["Curated gift sets","Custom packaging","Corporate gifting","Retail ready"], slots:slots("https://images.unsplash.com/photo-1549465220-1a8b9238cd48?auto=format&fit=crop&w=900&q=70")},
-  {name:"Neem Wooden Combs", cat:"lifestyle", art:"art-grain", oem:true, desc:"Crafted from natural neem wood, known for its beneficial properties. Suitable for private-label and retail programs.", features:["Natural neem wood","Anti-static properties","Private label ready","Eco-friendly packaging"], slots:slots("https://images.unsplash.com/photo-1627435602551-b6e78f6cb123?auto=format&fit=crop&w=900&q=70")},
-  {name:"Wooden Personal Care Accessories", cat:"lifestyle", art:"art-grain", oem:true, desc:"A range of wooden personal care accessories made from sustainably sourced natural materials.", features:["Natural materials","Sustainably sourced","Bathroom retail","Gift set options"], slots:slots("https://images.unsplash.com/photo-1601241275443-c8e71e7daae4?auto=format&fit=crop&w=900&q=70")},
-  {name:"Eco-friendly Gift Products", cat:"lifestyle", art:"art-grain", oem:true, desc:"Sustainable, gift-ready products suited to conscious retail and corporate gifting programmes.", features:["Sustainable materials","Gift-ready packaging","Corporate gifting","Retail ready"], slots:slots("https://images.unsplash.com/photo-1612725745247-1a4321e92a67?auto=format&fit=crop&w=900&q=70")},
+  {name:"Sungudi Sarees", cat:"textiles", art:"art-fold", oem:false, desc:"Traditional tie-dye sarees from Madurai — handcrafted, lightweight, and rich in cultural heritage. Available in a wide range of colors and patterns.", features:["Handcrafted tie-dye","Lightweight cotton","Cultural heritage","Multiple color options"], slots:initialGallery("https://images.unsplash.com/photo-1769059893121-bea9f89f817e?auto=format&fit=crop&w=900&q=70")},
+  {name:"Cotton Cushion Covers", cat:"textiles", art:"art-fold", oem:true, desc:"Available in solid colors, printed designs, embroidered styles, and handcrafted collections. Custom sizes on request.", features:["Solid / Printed / Embroidered","Custom sizes available","Private label options","Bulk export ready"], slots:initialGallery("https://images.unsplash.com/photo-1705412877835-c0f9ccc5b440?auto=format&fit=crop&w=900&q=70")},
+  {name:"Cotton Cushions", cat:"textiles", art:"art-fold", oem:true, desc:"Decorative cushions designed for homes, hotels, and hospitality projects. Fully customizable to your specifications.", features:["Home & hospitality use","Customization available","Various fill options","Hotel-grade quality"], slots:initialGallery("https://images.unsplash.com/photo-1770795946611-e60d748ca0ab?auto=format&fit=crop&w=900&q=70")},
+  {name:"Table Runners", cat:"textiles", art:"art-weave", oem:false, desc:"Elegant cotton table runners suitable for home décor, hospitality settings, and retail collections.", features:["Cotton & cotton blends","Multiple lengths","Hospitality grade","Custom prints available"], slots:initialGallery("https://images.unsplash.com/photo-1705493254146-710211d851fa?auto=format&fit=crop&w=900&q=70")},
+  {name:"Table Mats", cat:"textiles", art:"art-weave", oem:false, desc:"Cotton table mats for dining tables and hospitality use. Available in sets with matching runners.", features:["Set options available","Washable cotton","Hospitality suitable","Matching runner sets"], slots:initialGallery("https://images.unsplash.com/photo-1705493253575-e911888621ff?auto=format&fit=crop&w=900&q=70")},
+  {name:"Kitchen Linen", cat:"textiles", art:"art-fold", oem:false, desc:"Cotton kitchen towels, aprons, and oven mitts designed for retail and hospitality buyers.", features:["Kitchen towels & aprons","Absorbent cotton","Retail & hospitality","Custom branding"], slots:initialGallery("https://images.unsplash.com/photo-1705493254703-0eb2b654d538?auto=format&fit=crop&w=900&q=70")},
+  {name:"Bamboo Baskets", cat:"decor", art:"art-basket", oem:false, desc:"Handwoven bamboo baskets for home storage, gift packaging, decorative displays, and retail collections.", features:["Handwoven bamboo","Multiple sizes","Gift packaging use","Retail collections"], slots:initialGallery("https://images.unsplash.com/photo-1578678809626-a3741782f0b8?auto=format&fit=crop&w=900&q=70")},
+  {name:"Decorative Storage Baskets", cat:"decor", art:"art-basket", oem:false, desc:"Artisan-crafted storage baskets combining functionality with aesthetic appeal for modern interiors.", features:["Artisan crafted","Interior design appeal","Various materials","Nesting sets available"], slots:initialGallery("https://images.unsplash.com/photo-1481061730414-e888962bd2c0?auto=format&fit=crop&w=900&q=70")},
+  {name:"Handmade Home Accessories", cat:"decor", art:"art-weave", oem:false, desc:"Curated handmade accessories that add artisan character to any living space or retail collection.", features:["Artisan made","Unique designs","Retail ready","Gift suitable"], slots:initialGallery("https://images.unsplash.com/photo-1622153093514-4dd0078ac132?auto=format&fit=crop&w=900&q=70")},
+  {name:"Gift Collections", cat:"decor", art:"art-weave", oem:true, desc:"Curated gift sets combining textiles and décor items — suitable for retail, corporate gifting, and hospitality.", features:["Curated gift sets","Custom packaging","Corporate gifting","Retail ready"], slots:initialGallery("https://images.unsplash.com/photo-1549465220-1a8b9238cd48?auto=format&fit=crop&w=900&q=70")},
+  {name:"Neem Wooden Combs", cat:"lifestyle", art:"art-grain", oem:true, desc:"Crafted from natural neem wood, known for its beneficial properties. Suitable for private-label and retail programs.", features:["Natural neem wood","Anti-static properties","Private label ready","Eco-friendly packaging"], slots:initialGallery("https://images.unsplash.com/photo-1627435602551-b6e78f6cb123?auto=format&fit=crop&w=900&q=70")},
+  {name:"Wooden Personal Care Accessories", cat:"lifestyle", art:"art-grain", oem:true, desc:"A range of wooden personal care accessories made from sustainably sourced natural materials.", features:["Natural materials","Sustainably sourced","Bathroom retail","Gift set options"], slots:initialGallery("https://images.unsplash.com/photo-1601241275443-c8e71e7daae4?auto=format&fit=crop&w=900&q=70")},
+  {name:"Eco-friendly Gift Products", cat:"lifestyle", art:"art-grain", oem:true, desc:"Sustainable, gift-ready products suited to conscious retail and corporate gifting programmes.", features:["Sustainable materials","Gift-ready packaging","Corporate gifting","Retail ready"], slots:initialGallery("https://images.unsplash.com/photo-1612725745247-1a4321e92a67?auto=format&fit=crop&w=900&q=70")},
 ];
 
 const catLabels = {all:"All", textiles:"Home Textiles", decor:"Home Décor", lifestyle:"Natural Lifestyle"};
@@ -828,19 +829,21 @@ function renderProducts(){
 
   list.forEach((p, idx)=>{
     const gid = 'gal-' + idx + '-' + p.name.replace(/[^a-z0-9]+/gi,'');
+    const gallery = p.slots.length ? p.slots : [{img:null, stock:false}];
+    const showNav = gallery.length > 1;
     const card = el(`
       <div class="product-card fade-up">
         <div class="gallery ${p.art}" id="${gid}" style="cursor:pointer;" data-slug="${p.slug}">
           <span class="cat-chip">${catLabels[p.cat]}</span>
           ${p.oem ? '<span class="oem-chip">OEM</span>' : ''}
-          ${p.slots.map((s,i)=>`
+          ${gallery.map((s,i)=>`
             <div class="slot ${i===0?'show':''}" data-i="${i}">
-              ${s.img ? `<div class="stock-wrap"><img src="${s.img}" alt="${p.name} - ${s.cap}">${s.stock ? '<span class="stock-badge">Representative photo — real product photo coming soon</span>' : ''}</div>` : `
-              <div class="placeholder-slot"><span class="cap">${s.cap}<br>Photo coming soon</span></div>`}
+              ${s.img ? `<div class="stock-wrap"><img src="${s.img}" alt="${p.name}">${s.stock ? '<span class="stock-badge">Representative photo — real product photo coming soon</span>' : ''}</div>` : `
+              <div class="placeholder-slot"><span class="cap">Photo coming soon</span></div>`}
             </div>`).join('')}
-          <button class="gallery-nav prev" aria-label="Previous photo">‹</button>
+          ${showNav ? `<button class="gallery-nav prev" aria-label="Previous photo">‹</button>
           <button class="gallery-nav next" aria-label="Next photo">›</button>
-          <div class="gallery-dots">${p.slots.map((_,i)=>`<span class="${i===0?'active':''}"></span>`).join('')}</div>
+          <div class="gallery-dots">${gallery.map((_,i)=>`<span class="${i===0?'active':''}"></span>`).join('')}</div>` : ''}
         </div>
         <div class="product-body">
           <h3><a href="#product/${p.slug}" data-nav="products" style="cursor:pointer;" onclick="trackEvent('product_open',{product:'${p.name}'})">${p.name}</a></h3>
@@ -861,7 +864,7 @@ function renderProducts(){
       location.hash = '#product/' + p.slug;
     });
     let current = 0;
-    const total = p.slots.length;
+    const total = gallery.length;
     const slotsEls = galEl.querySelectorAll('.slot');
     const dots = galEl.querySelectorAll('.gallery-dots span');
     function show(n){
@@ -869,15 +872,20 @@ function renderProducts(){
       slotsEls.forEach((s,i)=>s.classList.toggle('show', i===current));
       dots.forEach((d,i)=>d.classList.toggle('active', i===current));
     }
-    galEl.querySelector('.prev').addEventListener('click', ()=>{ show(current-1); trackEvent('product_gallery_nav',{product:p.name, direction:'prev'}); });
-    galEl.querySelector('.next').addEventListener('click', ()=>{ show(current+1); trackEvent('product_gallery_nav',{product:p.name, direction:'next'}); });
+    const prevBtn = galEl.querySelector('.prev');
+    const nextBtn = galEl.querySelector('.next');
+    if(prevBtn) prevBtn.addEventListener('click', ()=>{ show(current-1); trackEvent('product_gallery_nav',{product:p.name, direction:'prev'}); });
+    if(nextBtn) nextBtn.addEventListener('click', ()=>{ show(current+1); trackEvent('product_gallery_nav',{product:p.name, direction:'next'}); });
   });
 
   attachDwellTracking();
   document.querySelectorAll('.fade-up').forEach(el3=>io.observe(el3));
 }
 
-/* Pull in real uploaded photos (via /admin.html) and merge before rendering */
+/* Pull in real uploaded photos (via /admin.html) and merge before rendering.
+   New uploads are stored as manifest[product].images = [url, url, ...] (any count).
+   Older uploads from before this change may still be stored as numeric keys
+   ("0","1","2") -- those are read the same way for backward compatibility. */
 async function applyUploadedPhotos(){
   try{
     const res = await fetch('/api/get-manifest');
@@ -886,7 +894,17 @@ async function applyUploadedPhotos(){
     products.forEach(p=>{
       const entry = manifest[p.name];
       if(!entry) return;
-      p.slots.forEach((slot,i)=>{ if(entry[i]){ slot.img = entry[i]; slot.stock = false; } });
+
+      let realImages = [];
+      if(Array.isArray(entry.images) && entry.images.length){
+        realImages = entry.images;
+      } else {
+        const numericKeys = Object.keys(entry).filter(k => /^\d+$/.test(k)).sort((a,b)=>a-b);
+        realImages = numericKeys.map(k => entry[k]).filter(Boolean);
+      }
+      if(realImages.length){
+        p.slots = realImages.map(url => ({img:url, stock:false}));
+      }
       if(entry.description && entry.description.trim()){ p.desc = entry.description.trim(); }
     });
   }catch(err){ console.warn('Photo manifest unavailable, using placeholders.', err); }
@@ -937,34 +955,37 @@ function renderProductDetail(p){
   document.getElementById('pd-features').innerHTML = p.features.map(f=>`<li><span class="tick">✓</span>${f}</li>`).join('');
   document.getElementById('pd-quote-btn').setAttribute('onclick', `trackEvent('cta_click',{cta:'product_detail_quote', product:'${p.name}'})`);
 
+  const gallery = p.slots.length ? p.slots : [{img:null, stock:false}];
   let current = 0;
   function renderMain(){
-    const s = p.slots[current];
+    const s = gallery[current];
     const mainEl = document.getElementById('pd-main-image');
     mainEl.innerHTML = s.img
-      ? `<div class="stock-wrap"><img src="${s.img}" alt="${p.name} - ${s.cap}">${s.stock ? '<span class="stock-badge">Representative photo — real product photo coming soon</span>' : ''}</div>`
-      : `<div class="placeholder-slot ${p.art}" style="width:100%;height:100%;"><span class="cap" style="color:#fff;">${s.cap}<br>Photo coming soon</span></div>`;
+      ? `<div class="stock-wrap"><img src="${s.img}" alt="${p.name}">${s.stock ? '<span class="stock-badge">Representative photo — real product photo coming soon</span>' : ''}</div>`
+      : `<div class="placeholder-slot ${p.art}" style="width:100%;height:100%;"><span class="cap" style="color:#fff;">Photo coming soon</span></div>`;
   }
   const thumbsEl = document.getElementById('pd-thumbs');
   thumbsEl.innerHTML = '';
-  p.slots.forEach((s,i)=>{
-    const t = el(`<div class="pd-thumb ${i===0?'active':''} ${!s.img ? p.art : ''}">
-      ${s.img ? `<img src="${s.img}" alt="${s.cap}">` : `<div class="placeholder-slot"><span class="cap">${s.cap}</span></div>`}
-    </div>`);
-    t.addEventListener('click', ()=>{
-      current = i;
-      thumbsEl.querySelectorAll('.pd-thumb').forEach((th,idx)=>th.classList.toggle('active', idx===i));
-      renderMain();
+  if(gallery.length > 1){
+    gallery.forEach((s,i)=>{
+      const t = el(`<div class="pd-thumb ${i===0?'active':''} ${!s.img ? p.art : ''}">
+        ${s.img ? `<img src="${s.img}" alt="${p.name} photo ${i+1}">` : `<div class="placeholder-slot"><span class="cap">···</span></div>`}
+      </div>`);
+      t.addEventListener('click', ()=>{
+        current = i;
+        thumbsEl.querySelectorAll('.pd-thumb').forEach((th,idx)=>th.classList.toggle('active', idx===i));
+        renderMain();
+      });
+      thumbsEl.appendChild(t);
     });
-    thumbsEl.appendChild(t);
-  });
+  }
   renderMain();
 
   const related = products.filter(rp => rp.cat===p.cat && rp.slug!==p.slug).slice(0,3);
   const relatedEl = document.getElementById('pd-related');
   relatedEl.innerHTML = '';
   related.forEach(rp=>{
-    const s0 = rp.slots[0];
+    const s0 = rp.slots[0] || {img:null, stock:false};
     const card = el(`
       <div class="product-card fade-up" style="cursor:pointer;">
         <div class="gallery ${rp.art}">
